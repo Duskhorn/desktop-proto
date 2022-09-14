@@ -1,6 +1,10 @@
 # Desktop Protogen!
 Inspired by [Desktop Goose by Samperson](https://samperson.itch.io/desktop-goose)
 
+## Dependencies
++ X11
++ imlib2
+
 ## Todo
 - [x] Choose a programming language: Nim won
 - [ ] Basic stuff
