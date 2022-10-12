@@ -22,6 +22,9 @@ proc main() =
     echo "the file is " & $imageGetWidth() & "x" & $imageGetHeight() & " pixels"
 
     let
+        w = imageGetWidth()
+        h = imageGetHeight()
+    let
         screen = DefaultScreen(display)  
         visual = DefaultVisual(display, screen)
         colormap = DefaultColormap(display, screen)      
@@ -29,16 +32,18 @@ proc main() =
         window = XCreateSimpleWindow(
             display, 
             RootWindow(display, screen),
-            0, 0, imageGetWidth(), imageGetHeight(), 0,
+            0, 0, w, h, 0,
             BlackPixel(display, screen),
             WhitePixel(display, screen))
 
         pix = XCreatePixmap(
             display, 
             window.Drawable, 
-            imageGetWidth(), 
-            imageGetHeight(),
+            w, 
+            h,
             DefaultDepth(display, screen).cuint)
+        
+        gc = XCreateGC(display, window, 0, nil)
 
     defer:
         discard XDestroyWindow(display, window)
@@ -52,6 +57,9 @@ proc main() =
     discard XSetWindowBackgroundPixmap(display, window, pix)
     discard XMapWindow(display, window)
     discard XClearWindow(display, window)
+
+    discard XSetForeground(display, gc, 0x00000000)
+    discard XFillRectangle(display, window, gc, 0, 0, w, h)
     
     var event: XEvent
     while XPending(display) == 0:
