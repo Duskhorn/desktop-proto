@@ -13,7 +13,7 @@ proc main() =
 
     var err: LoadError
     let 
-        pt = getCurrentDir() & "/testing/proto-test.png"
+        pt = getCurrentDir() & "/src/assets/headtest.png"
         proto = loadImageError(pt.cstring, err)
     
     contextSetImage(proto)
