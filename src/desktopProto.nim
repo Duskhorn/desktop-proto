@@ -8,13 +8,14 @@ proc render(r: RendererPtr, t: TexturePtr, dim: Rect) =
     r.setDrawColor 0, 0, 255, 255
     r.clear
     r.copy t, addr dim, addr dim 
+    r.present
 
 proc main() =
     discard sdl2.init(INIT_EVERYTHING)
     defer: sdl2.quit()
     
     var 
-        surface = image.load("src/assets/headtest.bmp")
+        surface = image.load("src/assets/headtest.png")
         mode: WindowShapeMode
     defer: destroy surface
 
@@ -31,7 +32,7 @@ proc main() =
     defer: destroy window
     echo window.repr
 
-    var renderer = createRenderer(window, -1, 0)
+    var renderer = createRenderer(window, -1, Renderer_Accelerated or Renderer_TargetTexture)
     defer: destroy renderer
     echo renderer.repr
     
@@ -46,15 +47,25 @@ proc main() =
     queryTexture(texture, addr pixfmt, addr access, addr dim.w, addr dim.h)
     window.setSize(dim.w, dim.h)
     window.setShape(surface, addr mode)
+
+    echo window.repr
     
     var 
-        ev: Event
-        run = true
-    echo ev.repr
-    while run:
-        while pollEvent(ev):
-            if ev.kind == QuitEvent: 
-                run = false
+        evt = sdl2.defaultEvent
+        running = true
+    
+    while running:
+        while pollEvent(evt):
+            let k = evt.kind
+            if k == QuitEvent: 
+                running = false
+                echo "quit"
                 break
+            elif k == KeyDown:
+                running = false
+                echo "key down"
+                break
+            else: continue
+
         render(renderer, texture, dim)             
 main()
