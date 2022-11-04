@@ -11,3 +11,4 @@ bin           = @["desktopProto"]
 # Dependencies
 
 requires "nim >= 1.6.8"
+requires "sdl2"
