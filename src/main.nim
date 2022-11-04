@@ -1,71 +1,61 @@
-import x11/xlib, x11/x
-import img
+import sdl2
+import sdl2/image
+import shape
 
-from os import getCurrentDir
 
-proc main() = 
-    let display = XOpenDisplay(nil)
-    if display == nil:
-        echo "desktop-proto: cannot open display"
-        return
-    defer: 
-        discard XCloseDisplay(display)
 
-    var err: LoadError
-    let 
-        pt = getCurrentDir() & "/src/assets/headtest.png"
-        proto = loadImageError(pt.cstring, err)
+proc render(r: RendererPtr, t: TexturePtr, dim: Rect) = 
+    r.setDrawColor 0, 0, 255, 255
+    r.clear
+    r.copy t, addr dim, addr dim 
+
+proc main() =
+    discard sdl2.init(INIT_EVERYTHING)
+    defer: sdl2.quit()
     
-    contextSetImage(proto)
-    echo "loaded image file from '" & pt & "'"
-    echo "If this is zero, the image loaded correctly! --> *** " & repr(err) & " ***"
-    echo "the file is " & $imageGetWidth() & "x" & $imageGetHeight() & " pixels"
+    var 
+        surface = image.load("src/assets/headtest.bmp")
+        mode: WindowShapeMode
+    defer: destroy surface
 
-    let
-        w = imageGetWidth()
-        h = imageGetHeight()
-    let
-        screen = DefaultScreen(display)  
-        visual = DefaultVisual(display, screen)
-        colormap = DefaultColormap(display, screen)      
-
-        window = XCreateSimpleWindow(
-            display, 
-            RootWindow(display, screen),
-            0, 0, w, h, 0,
-            BlackPixel(display, screen),
-            WhitePixel(display, screen))
-
-        pix = XCreatePixmap(
-            display, 
-            window.Drawable, 
-            w, 
-            h,
-            DefaultDepth(display, screen).cuint)
-        
-        gc = XCreateGC(display, window, 0, nil)
-
-    defer:
-        discard XDestroyWindow(display, window)
+    echo surface.repr
     
-    contextSetDisplay(display)
-    contextSetVisual(visual)
-    contextSetColormap(colormap)
-    contextSetDrawable(pix)
+    if surface.format.format.SDL_ISPIXELFORMAT_ALPHA():
+        mode.mode = ShapeModeBinarizeAlpha
+        mode.parameters.binarizationCutoff = 255
+    else:
+        mode.mode = ShapeModeColorKey
+        mode.parameters.colorKey = color(0,0,0,255)
 
-    discard XSelectInput(display, window, ExposureMask or KeyPressMask)
-    discard XSetWindowBackgroundPixmap(display, window, pix)
-    discard XMapWindow(display, window)
-    discard XClearWindow(display, window)
+    var window = createShapedWindow("TEST", 0, 0, 1000, 1000, 0)
+    defer: destroy window
+    echo window.repr
 
-    discard XSetForeground(display, gc, 0x00000000)
-    discard XFillRectangle(display, window, gc, 0, 0, w, h)
+    var renderer = createRenderer(window, -1, 0)
+    defer: destroy renderer
+    echo renderer.repr
     
-    var event: XEvent
-    while XPending(display) == 0:
-        discard XNextEvent(display, event.addr)
-        if event.theType == KeyPress: break
+    var 
+        texture = renderer.createTextureFromSurface(surface)
+        pixfmt: uint32 = 0
+        access: cint = 0
+        dim = rect(0,0,0,0)
+    defer: destroy texture
+    echo texture.repr
 
-    freeImage(proto)
+    queryTexture(texture, addr pixfmt, addr access, addr dim.w, addr dim.h)
+    window.setSize(dim.w, dim.h)
+    window.setShape(surface, addr mode)
     
+    var 
+        ev: Event
+        run = true
+    echo ev.repr
+    while run:
+        render(renderer, texture, dim)
+        while pollEvent(ev):
+            if ev.kind == QuitEvent: 
+                run = false
+                break
+                     
 main()
