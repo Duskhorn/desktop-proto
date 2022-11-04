@@ -52,10 +52,9 @@ proc main() =
         run = true
     echo ev.repr
     while run:
-        render(renderer, texture, dim)
         while pollEvent(ev):
             if ev.kind == QuitEvent: 
                 run = false
                 break
-                     
+        render(renderer, texture, dim)             
 main()
