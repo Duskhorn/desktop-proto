@@ -18,6 +18,6 @@ type
         parameters*: ShapeParameters
 
 proc createShapedWindow*(title: cstring, x, y, w, h: cint, flags: uint32) : WindowPtr {. importc: "SDL_CreateShapedWindow".}
-proc setShape*(window: WindowPtr, shape: SurfacePtr, mode: ptr WindowShapeMode) : cint {. importc: "SDL_SetWindowShape", discardable.}
+proc setShape*(window: WindowPtr, shape: SurfacePtr, mode: ptr WindowShapeMode) : SDL_Return {. importc: "SDL_SetWindowShape", discardable.}
 
 {. pop .}
