@@ -3,6 +3,7 @@ import sdl2/image
 import shape
 
 const name = "src/assets/proto-test.png"
+const DEV_MODE = true
 
 template render(r: RendererPtr, t: TexturePtr, dim: Rect) = 
     r.setDrawColor 0, 0, 255, 255
@@ -54,20 +55,24 @@ proc main() =
         while pollEvent(evt):
             case evt.kind:
             of KeyDown:
-                if evt.key.keysym.sym == K_r:
+                if evt.key.keysym.sym == K_q and evt.key.keysym.mod and KMOD_LSHIFT or KMOD_RSHIFT != 0:
+                    running = false
+                    echo "Quit"
+                elif DEV_MODE and evt.key.keysym.sym == K_r:
                     var t1 = renderer.createTextureFromSurface(surface)
                     queryTexture(t1, addr pixfmt, addr access, addr dim.w, addr dim.h)
                     window.setSize(dim.w, dim.h)
                     window.setShape(surface, addr mode)
                     texture = t1
                     destroy t1
-                    echo "reloaded"
+                    echo "Reloaded"
             of QuitEvent: 
                 running = false
-                echo "quit"
+                echo "Quit"
                 break
             else: continue
 
+        window.hide()  # hide the window to make it invisible
         render(renderer, texture, dim)  
         sdl2.delay(10)           
 main()
